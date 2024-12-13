@@ -1,0 +1,73 @@
+{% extends '_base.html' %}
+{% block body %}
+<div class="container">
+<form method="post">
+    {% csrf_token %}
+
+    <div>
+        <label>انتخاب زمان:</label>
+        <div class="time-slots">
+            {% for value, label in form.fields.reservation_time.choices %}
+                {% if "رزرو شده" in label %}
+                    <!-- بازه رزرو شده -->
+                    <button type="button" class="btn btn-danger reserved" disabled>{{ label }}</button>
+                {% else %}
+                    <!-- بازه قابل رزرو -->
+                    <button type="button" class="btn btn-success select-time" data-value="{{ value }}">{{ label }}</button>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <input type="hidden" name="time_slot" value="{{ form.initial.time_slot.id }}">
+
+    <div class="form-group">
+        {{ form.name.label_tag }}
+        <input type="text" name="name" class="form-control" value="{{ form.name.value|default:'' }}" placeholder="نام خود را وارد کنید">
+    </div>
+
+    <div class="form-group">
+        {{ form.phone.label_tag }}
+        <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}" placeholder="شماره تلفن خود را وارد کنید">
+    </div>
+
+    <input type="hidden" id="selected-time" name="reservation_time" value="">
+    <button type="submit" class="btn btn-primary">رزرو</button>
+</form>
+
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const buttons = document.querySelectorAll('.select-time');
+    const hiddenInput = document.getElementById('selected-time');
+    let activeButton = null; // ذخیره دکمه فعال
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function () {
+            if (activeButton === button) {
+                // اگر دوباره روی دکمه فعال کلیک شد
+                activeButton.classList.remove('btn-secondary');
+                activeButton = null;
+                hiddenInput.value = ''; // حذف مقدار فیلد مخفی
+                buttons.forEach(btn => btn.disabled = false); // فعال کردن همه دکمه‌ها
+            } else {
+                // تنظیم دکمه به عنوان فعال
+                if (activeButton) {
+                    activeButton.classList.remove('btn-secondary');
+                }
+                activeButton = button;
+                activeButton.classList.add('btn-secondary');
+                hiddenInput.value = button.getAttribute('data-value');
+
+                // غیرفعال کردن دیگر دکمه‌ها
+                buttons.forEach(btn => {
+                    if (btn !== activeButton) {
+                        btn.disabled = true;
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}
